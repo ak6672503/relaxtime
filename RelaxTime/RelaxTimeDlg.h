@@ -44,10 +44,18 @@ public:
 
 public:
 	const CString TextValue1 = "请输入要修改的天数";
+	const CString TextValue2 = "请选择要修改的序号";
 	void InitListCtrl();
 	void closedb();
-	CString checkok();
+	CString GetTime(CString CBText);
 	void ConnectDB();
+	void chushihua();
+	BOOL GetcbCurSel();
+	BOOL ChangeDataTime(CString NewData);
+
+	CString GetSystemTime();
+	
+
 
 	_ConnectionPtr m_pConnection; //连接access数据库的链接对象 
 
@@ -55,4 +63,5 @@ public:
 	CString strCBText;
 
 	CComboBox m_cb1;
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 };

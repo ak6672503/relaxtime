@@ -74,6 +74,7 @@ BEGIN_MESSAGE_MAP(CRelaxTimeDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_SBday, &CRelaxTimeDlg::OnBnClickedSbday)
 //	ON_EN_CHANGE(IDC_DAY, &CRelaxTimeDlg::OnEnChangeDay)
 	ON_EN_SETFOCUS(IDC_DAY, &CRelaxTimeDlg::OnEnSetfocusDay)
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 
@@ -109,11 +110,10 @@ BOOL CRelaxTimeDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
-	m_list.InsertColumn(0, _T("序号"), LVCFMT_LEFT, 100);
-	m_list.InsertColumn(1, _T("名字"), LVCFMT_LEFT, 150);
-	m_list.InsertColumn(2, _T("剩余假期"), LVCFMT_LEFT, 200);
-	GetDlgItem(IDC_DAY)->SetWindowTextA(TextValue1);
+	SetTimer(1, 10000, 0);
 
+
+	chushihua();
 	InitListCtrl();
 	
 
@@ -169,6 +169,27 @@ HCURSOR CRelaxTimeDlg::OnQueryDragIcon()
 
 void CRelaxTimeDlg::OnBnClickedAdday()
 {
+	UpdateData();
+	
+	if (CheckTextIsNotNull()) {
+		
+		CString NeedData;
+		if (GetcbCurSel()){
+			//把提取出来的数值，加上要修改的数值，然后用取小数点后1位的方式变成cstring
+			NeedData.Format(_T("%.1lf"), _ttof(E_Day) + _ttof(GetTime(strCBText)));
+			
+			if(ChangeDataTime(NeedData)){
+			MessageBox("数据更改成功");
+			MessageBox(GetSystemTime());
+			m_list.DeleteAllItems();
+			InitListCtrl();
+			}
+			else {
+				MessageBox("数据更改失败");
+			}
+		}
+	}
+	
 	
 }
 
@@ -199,11 +220,8 @@ bool CRelaxTimeDlg::CheckTextIsNotNull() {
 //listctrl框初始化
 void CRelaxTimeDlg::InitListCtrl()
 {
-
-
 	m_cb1.ResetContent();
-	m_cb1.AddString("请选择要修改的序号");
-
+	m_cb1.AddString(TextValue2);
 
  	ConnectDB();
 	HRESULT hr;
@@ -261,15 +279,16 @@ void CRelaxTimeDlg::InitListCtrl()
 	closedb();
 }
 
-//验证假期是否足够抵扣
-CString CRelaxTimeDlg::checkok()
+//通过选择序号提取出某个人还剩下的假期
+CString CRelaxTimeDlg::GetTime(CString CBText)
 {
+	ConnectDB();
 	_RecordsetPtr pDVDIDRecordset;
 	pDVDIDRecordset.CreateInstance(__uuidof(Recordset));
 
 	CString value = "";
 	CString strSQL, strValue;
-	strSQL.Format(_T("select sTime from sPeople where id = %d"), _ttoi(strCBText));
+	strSQL.Format(_T("select sTime from sPeople where id = %d"), _ttoi(CBText));
 
 	try
 	{
@@ -296,6 +315,7 @@ CString CRelaxTimeDlg::checkok()
 
 	pDVDIDRecordset->Close();
 	pDVDIDRecordset = NULL;
+	closedb();
 	return value;
 }
 
@@ -328,4 +348,87 @@ void CRelaxTimeDlg::closedb()
 	{
 		m_pConnection->Close();
 	}
+}
+
+
+//初始化函数 所有文本的东西都丢在这里
+void CRelaxTimeDlg::chushihua() {
+	m_list.InsertColumn(0, _T("序号"), LVCFMT_LEFT, 100);
+	m_list.InsertColumn(1, _T("名字"), LVCFMT_LEFT, 150);
+	m_list.InsertColumn(2, _T("剩余假期"), LVCFMT_LEFT, 200);
+
+	
+
+}
+//计时器，拿来设定文本框提示符
+void CRelaxTimeDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	UpdateData();
+	if (E_Day == "" || E_Day == TextValue1) {
+		GetDlgItem(IDC_DAY)->SetWindowTextA(TextValue1);
+		SetFocus();
+	}
+
+	CDialogEx::OnTimer(nIDEvent);
+}
+
+//判断是否有选择序号
+BOOL CRelaxTimeDlg::GetcbCurSel(){
+
+int nIndex = m_cb1.GetCurSel();
+m_cb1.GetLBText(nIndex, strCBText); //获取到选择的下拉框的具体文本
+
+if (strCBText == TextValue2)
+{
+	MessageBox("请选择了要修改的序号再使用此功能");
+	return false;
+}
+return true;
+
+ }
+
+//修改数据库的时间
+BOOL CRelaxTimeDlg::ChangeDataTime(CString NewData)
+{
+	ConnectDB();
+
+	HRESULT hr;
+
+	_CommandPtr pCommand; //申请cmd对象
+	hr = pCommand.CreateInstance(__uuidof(Command));
+	if (FAILED(hr)) {
+		MessageBox(_T("创建cmd对象失败"));
+		return false;
+	}
+	pCommand->ActiveConnection = m_pConnection;
+	CString strSql;
+	
+			strSql.Format(_T("update sPeople set sTime = \'%s\' where ID = %d"), NewData, _ttoi(strCBText));
+			pCommand->CommandText = _bstr_t(strSql);
+			try {
+				hr = pCommand->Execute(NULL, NULL, adCmdText);
+				if (FAILED(hr)) {
+					return false;
+				}
+			}
+			catch (_com_error* e) {
+				MessageBox(e->ErrorMessage());
+			}
+		
+
+	pCommand = NULL;
+	closedb();
+	return TRUE;
+}
+
+CString CRelaxTimeDlg::GetSystemTime() {
+
+	CString m_strDateTime;
+	CTime m_time;
+	m_time = CTime::GetCurrentTime();             //获取当前时间日期  
+	
+	m_strDateTime = m_time.Format(_T("%Y-%m-%d %H:%M:%S %A"));   //格式化日期时间  
+	//UpdateData(false);
+
+	return  m_strDateTime;
 }
