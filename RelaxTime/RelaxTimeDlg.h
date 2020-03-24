@@ -51,7 +51,7 @@ public:
 	void ConnectDB();
 	void chushihua();
 	BOOL GetcbCurSel();
-	BOOL ChangeDataTime(CString NewData);
+	BOOL ChangeDataTime(CString NewData,CString Times);
 
 	CString GetSystemTime();
 	

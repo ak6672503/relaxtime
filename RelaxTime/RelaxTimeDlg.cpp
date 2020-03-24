@@ -166,7 +166,7 @@ HCURSOR CRelaxTimeDlg::OnQueryDragIcon()
 }
 
 
-
+//增加
 void CRelaxTimeDlg::OnBnClickedAdday()
 {
 	UpdateData();
@@ -177,10 +177,10 @@ void CRelaxTimeDlg::OnBnClickedAdday()
 		if (GetcbCurSel()){
 			//把提取出来的数值，加上要修改的数值，然后用取小数点后1位的方式变成cstring
 			NeedData.Format(_T("%.1lf"), _ttof(E_Day) + _ttof(GetTime(strCBText)));
-			
-			if(ChangeDataTime(NeedData)){
+			CString NowTime = GetSystemTime();
+			if(ChangeDataTime(NeedData,NowTime)){
 			MessageBox("数据更改成功");
-			MessageBox(GetSystemTime());
+			//MessageBox(GetSystemTime());
 			m_list.DeleteAllItems();
 			InitListCtrl();
 			}
@@ -193,9 +193,39 @@ void CRelaxTimeDlg::OnBnClickedAdday()
 	
 }
 
-
+//减少
 void CRelaxTimeDlg::OnBnClickedSbday()
 {
+	UpdateData();
+
+	if (CheckTextIsNotNull()) {
+
+		CString NeedData;
+		if (GetcbCurSel()) {
+			//把提取出来的数值，加上要修改的数值，然后用取小数点后1位的方式变成cstring
+			double linshi;
+			linshi = _ttof(GetTime(strCBText)) - _ttof(E_Day);
+			if (linshi >= 0.0) {
+				NeedData.Format(_T("%.1lf"),linshi);
+				CString NowTime = GetSystemTime();
+				if (ChangeDataTime(NeedData, NowTime)) {
+					MessageBox("数据更改成功");
+
+					m_list.DeleteAllItems();
+					InitListCtrl();
+				}
+				else {
+					MessageBox("数据更改失败");
+				}
+			}
+			else
+			{
+				MessageBox("假期不够抵扣");
+			}
+			
+			
+		}
+	}
 	
 }
 	
@@ -258,6 +288,12 @@ void CRelaxTimeDlg::InitListCtrl()
 				if (var.vt != NULL)
 					strValue = (LPCTSTR)_bstr_t(var);
 				m_list.SetItemText(curItem, 2, strValue);
+
+				var = pRentRecordset->GetCollect(_T("sData"));
+				if (var.vt != NULL)
+					strValue = (LPCTSTR)_bstr_t(var);
+				m_list.SetItemText(curItem, 3, strValue);
+
 				pRentRecordset->MoveNext();
 				curItem++;
 			}
@@ -355,7 +391,9 @@ void CRelaxTimeDlg::closedb()
 void CRelaxTimeDlg::chushihua() {
 	m_list.InsertColumn(0, _T("序号"), LVCFMT_LEFT, 100);
 	m_list.InsertColumn(1, _T("名字"), LVCFMT_LEFT, 150);
-	m_list.InsertColumn(2, _T("剩余假期"), LVCFMT_LEFT, 200);
+	m_list.InsertColumn(2, _T("剩余假期"), LVCFMT_LEFT, 150);
+	m_list.InsertColumn(3, _T("修改时间"), LVCFMT_LEFT, 300);
+
 
 	
 
@@ -388,7 +426,7 @@ return true;
  }
 
 //修改数据库的时间
-BOOL CRelaxTimeDlg::ChangeDataTime(CString NewData)
+BOOL CRelaxTimeDlg::ChangeDataTime(CString NewData,CString Times)
 {
 	ConnectDB();
 
@@ -403,7 +441,7 @@ BOOL CRelaxTimeDlg::ChangeDataTime(CString NewData)
 	pCommand->ActiveConnection = m_pConnection;
 	CString strSql;
 	
-			strSql.Format(_T("update sPeople set sTime = \'%s\' where ID = %d"), NewData, _ttoi(strCBText));
+			strSql.Format(_T("update sPeople set sTime = \'%s\',sData = \'%s\' where ID = %d"), NewData,Times, _ttoi(strCBText));
 			pCommand->CommandText = _bstr_t(strSql);
 			try {
 				hr = pCommand->Execute(NULL, NULL, adCmdText);
@@ -421,13 +459,14 @@ BOOL CRelaxTimeDlg::ChangeDataTime(CString NewData)
 	return TRUE;
 }
 
+//获取系统时间
 CString CRelaxTimeDlg::GetSystemTime() {
 
 	CString m_strDateTime;
 	CTime m_time;
 	m_time = CTime::GetCurrentTime();             //获取当前时间日期  
 	
-	m_strDateTime = m_time.Format(_T("%Y-%m-%d %H:%M:%S %A"));   //格式化日期时间  
+	m_strDateTime = m_time.Format(_T("%Y-%m-%d %H:%M:%S"));   //格式化日期时间  
 	//UpdateData(false);
 
 	return  m_strDateTime;
