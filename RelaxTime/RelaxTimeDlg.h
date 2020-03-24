@@ -43,8 +43,10 @@ public:
 	
 
 public:
-	const CString TextValue1 = "请输入要修改的天数";
-	const CString TextValue2 = "请选择要修改的序号";
+	
+	
+	 const CString TextValue1 = _T("请输入要修改的天数");
+	const  CString TextValue2 = _T("请选择要修改的序号");
 	void InitListCtrl();
 	void closedb();
 	CString GetTime(CString CBText);

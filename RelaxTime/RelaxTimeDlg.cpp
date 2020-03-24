@@ -179,13 +179,13 @@ void CRelaxTimeDlg::OnBnClickedAdday()
 			NeedData.Format(_T("%.1lf"), _ttof(E_Day) + _ttof(GetTime(strCBText)));
 			CString NowTime = GetSystemTime();
 			if(ChangeDataTime(NeedData,NowTime)){
-			MessageBox("数据更改成功");
+			MessageBox(_T("数据更改成功"));
 			//MessageBox(GetSystemTime());
 			m_list.DeleteAllItems();
 			InitListCtrl();
 			}
 			else {
-				MessageBox("数据更改失败");
+				MessageBox(_T("数据更改失败"));
 			}
 		}
 	}
@@ -209,18 +209,18 @@ void CRelaxTimeDlg::OnBnClickedSbday()
 				NeedData.Format(_T("%.1lf"),linshi);
 				CString NowTime = GetSystemTime();
 				if (ChangeDataTime(NeedData, NowTime)) {
-					MessageBox("数据更改成功");
+					MessageBox(_T("数据更改成功"));
 
 					m_list.DeleteAllItems();
 					InitListCtrl();
 				}
 				else {
-					MessageBox("数据更改失败");
+					MessageBox(_T("数据更改失败"));
 				}
 			}
 			else
 			{
-				MessageBox("假期不够抵扣");
+				MessageBox(_T("假期不够抵扣"));
 			}
 			
 			
@@ -233,7 +233,7 @@ void CRelaxTimeDlg::OnBnClickedSbday()
 //文本输入框获取焦点
 void CRelaxTimeDlg::OnEnSetfocusDay()
 {
-	GetDlgItem(IDC_DAY)->SetWindowTextA(_T(""));
+	GetDlgItem(IDC_DAY)->SetWindowText(_T(""));
 }
 
 
@@ -241,7 +241,7 @@ void CRelaxTimeDlg::OnEnSetfocusDay()
 bool CRelaxTimeDlg::CheckTextIsNotNull() {
 
 	if (E_Day == TextValue1 || E_Day == "") {
-		MessageBox("请在文本框中输入要修改的天数");
+		MessageBox(_T("请在文本框中输入要修改的天数"));
 		return false;
 	}
 	return true;
@@ -322,7 +322,7 @@ CString CRelaxTimeDlg::GetTime(CString CBText)
 	_RecordsetPtr pDVDIDRecordset;
 	pDVDIDRecordset.CreateInstance(__uuidof(Recordset));
 
-	CString value = "";
+	CString value = (_T(""));
 	CString strSQL, strValue;
 	strSQL.Format(_T("select sTime from sPeople where id = %d"), _ttoi(CBText));
 
@@ -364,7 +364,7 @@ void CRelaxTimeDlg::ConnectDB()
 	 //连到具体某个mdb ，此处的的Provider语句因Access版本的不同而有所不同。
 	try {
 		m_pConnection->
-			Open("Provider=Microsoft.ACE.OLEDB.12.0;Data Source=MyAccess.accdb;Persist Security Info = False;", "", "", adModeUnknown);
+			Open("Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\Users\\wddd\\source\\repos\\RelaxTime\\Debug\\MyAccess.accdb;Persist Security Info = False;", "", "", adModeUnknown);
 	}
 	catch (_com_error e)
 	{
@@ -403,7 +403,7 @@ void CRelaxTimeDlg::OnTimer(UINT_PTR nIDEvent)
 {
 	UpdateData();
 	if (E_Day == "" || E_Day == TextValue1) {
-		GetDlgItem(IDC_DAY)->SetWindowTextA(TextValue1);
+		GetDlgItem(IDC_DAY)->SetWindowText(TextValue1);
 		SetFocus();
 	}
 
@@ -418,7 +418,7 @@ m_cb1.GetLBText(nIndex, strCBText); //获取到选择的下拉框的具体文本
 
 if (strCBText == TextValue2)
 {
-	MessageBox("请选择了要修改的序号再使用此功能");
+	MessageBox(_T("请选择了要修改的序号再使用此功能"));
 	return false;
 }
 return true;
