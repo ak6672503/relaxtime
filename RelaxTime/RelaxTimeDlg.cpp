@@ -364,7 +364,7 @@ void CRelaxTimeDlg::ConnectDB()
 	 //连到具体某个mdb ，此处的的Provider语句因Access版本的不同而有所不同。
 	try {
 		m_pConnection->
-			Open("Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\Users\\wddd\\source\\repos\\RelaxTime\\Debug\\MyAccess.accdb;Persist Security Info = False;", "", "", adModeUnknown);
+			Open("Provider=Microsoft.ACE.OLEDB.12.0;Data Source=MyAccess.accdb;Persist Security Info = False;", "", "", adModeUnknown);
 	}
 	catch (_com_error e)
 	{
